@@ -180,6 +180,10 @@ public class MainActivity extends Activity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
+        	case R.id.menu_bluetooth:
+        		Intent intent = new Intent(this, BlueToothDataActivity.class);
+        		startActivity(intent);
+        		break;
             case R.id.menu_connect:
                 try {
                     linkConnect();
@@ -194,8 +198,8 @@ public class MainActivity extends Activity {
                 radioScan();
                 break;
             case R.id.preferences:
-                Intent intent = new Intent(this, PreferencesActivity.class);
-                startActivity(intent);
+                Intent intent2 = new Intent(this, PreferencesActivity.class);
+                startActivity(intent2);
                 break;
         }
         return true;
