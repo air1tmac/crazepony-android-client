@@ -36,6 +36,7 @@
             <meta-data android:value="se.bitcraze.crazyfliecontrol.MainActivity" android:name="android.support.PARENT_ACTIVITY"/>
         </activity>
         <activity android:name="BlueToothDataActivity">
+            <meta-data android:value="se.bitcraze.crazyfliecontrol.MainActivity" android:name="android.support.PARENT_ACTIVITY"/>
         </activity>
     </application>
 

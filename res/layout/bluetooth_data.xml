@@ -6,13 +6,13 @@
     android:orientation="vertical" >
 
     <ToggleButton
-        android1:id="@+id/toggleButton1"
+        android1:id="@+id/bluetoothButton"
         android1:layout_width="wrap_content"
         android1:layout_height="wrap_content"
         android1:text="ToggleButton" />
 
     <TextView
-        android1:id="@+id/textView2"
+        android1:id="@+id/dataTextView"
         android1:layout_width="match_parent"
         android1:layout_height="wrap_content"
         android1:layout_weight="1"

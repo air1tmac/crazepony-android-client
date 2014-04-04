@@ -129,6 +129,8 @@ public class MainActivity extends Activity {
         registerReceiver(mUsbReceiver, filter);
 
         initializeSounds();
+        
+        
     }
 
     private void initializeSounds() {
