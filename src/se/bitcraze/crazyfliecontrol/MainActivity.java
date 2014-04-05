@@ -176,12 +176,16 @@ public class MainActivity extends Activity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.activity_main, menu);
-        return true;
+        return super.onCreateOptionsMenu(menu);
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
+        	case R.id.action_bluetooth:
+	        	Intent intent1 = new Intent(this, BlueToothDataActivity.class);
+	    		startActivity(intent1);
+	    		break;
         	case R.id.menu_bluetooth:
         		Intent intent = new Intent(this, BlueToothDataActivity.class);
         		startActivity(intent);
