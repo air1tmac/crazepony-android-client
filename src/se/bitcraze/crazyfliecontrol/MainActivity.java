@@ -183,7 +183,7 @@ public class MainActivity extends Activity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
         	case R.id.action_bluetooth:
-	        	Intent intent1 = new Intent(this, BlueToothDataActivity.class);
+	        	Intent intent1 = new Intent(this, BluetoothActivity.class);
 	    		startActivity(intent1);
 	    		break;
         	case R.id.menu_bluetooth:
