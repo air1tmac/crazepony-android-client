@@ -3,10 +3,13 @@ package se.bitcraze.crazyfliecontrol;
 
 import se.bitcraze.communication.BluetoothService;
 import android.app.Activity;
+import android.app.ProgressDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.os.Bundle;
 import android.support.v4.app.NavUtils;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -15,6 +18,7 @@ import android.widget.ToggleButton;
 public class BlueToothDataActivity extends Activity {
 
 	private ToggleButton togglebutton;
+	private ProgressDialog progressDialog;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -42,13 +46,34 @@ public class BlueToothDataActivity extends Activity {
 	}
 	
     @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.activity_bluetooth, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @SuppressWarnings("deprecation")
+	@Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
         case android.R.id.home:
             NavUtils.navigateUpFromSameTask(this);
-            return true;
+            break;
+	    case R.id.action_search:
+	    	progressDialog = new ProgressDialog(this);
+	    	progressDialog.setTitle(R.string.bluetooth_scan_title);
+	    	progressDialog.setMessage("Please wait...");
+	    	progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+	    	progressDialog.setCancelable(false);
+	    	progressDialog.setButton("Cancel", new DialogInterface.OnClickListener() {
+	             public void onClick(DialogInterface dialog, int i){
+	             }
+	         });
+	    	
+	    	progressDialog.show();
+	    	
+			break;
         }
-        return super.onOptionsItemSelected(item);
+        return true;
     }
 	
 	private void startBluetoothService() {
@@ -60,3 +85,5 @@ public class BlueToothDataActivity extends Activity {
 	}
 	
 }
+
+
