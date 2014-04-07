@@ -2,6 +2,7 @@ package se.bitcraze.communication;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
@@ -30,6 +31,8 @@ public class BluetoothService extends Service {
 	private static final String TAG = "BTService";
 	
 	private BluetoothAdapter mBluetoothAdapter = null;
+	private ConnectedThread mConnectedThread;
+	
 	private LinkedHashSet<String> bluetoothDevicesName;
 	
 	private BluetoothInterface bluetoothInterface;
@@ -94,16 +97,21 @@ public class BluetoothService extends Service {
 	public void connectBluetoothDevice() {
 		cancelBluetoothDiscovery();
 		
+		// Cancel any thread currently running a connection
+        if (mConnectedThread != null) {
+        	mConnectedThread.cancel(); 
+        	mConnectedThread = null;
+        }
+		
 		Object[] deviceses = bluetoothDevices.toArray();
 		BluetoothDevice mBluetoothDevice = (BluetoothDevice) deviceses[0];
+		
 		try {
 			mBluetoothSocket = mBluetoothDevice.createInsecureRfcommSocketToServiceRecord(SPP_UUID);
-			InputStream input;
 			mBluetoothSocket.connect();
-			input = mBluetoothSocket.getInputStream();
-			byte[] b = new byte[1024];
-			int tmp = input.read(b);
-			Toast.makeText(this, new String(b, 0, tmp - 1), 0).show();
+			// Start the thread to manage the connection and perform transmissions
+	        mConnectedThread = new ConnectedThread(mBluetoothSocket, "Insecure");
+	        mConnectedThread.start();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -152,7 +160,80 @@ public class BluetoothService extends Service {
 	            Log.v(TAG, device.getName() + "\n" + device.getAddress());
 	        }
 	    }
-	};
+	};    
+	
+	
+	/**
+     * This thread runs during a connection with a remote device.
+     * It handles all incoming and outgoing transmissions.
+     */
+    private class ConnectedThread extends Thread {
+        private final BluetoothSocket mmSocket;
+        private final InputStream mmInStream;
+        private final OutputStream mmOutStream;
+
+        public ConnectedThread(BluetoothSocket socket, String socketType) {
+            Log.d(TAG, "create ConnectedThread: " + socketType);
+            mmSocket = socket;
+            InputStream tmpIn = null;
+            OutputStream tmpOut = null;
+
+            // Get the BluetoothSocket input and output streams
+            try {
+                tmpIn = socket.getInputStream();
+                tmpOut = socket.getOutputStream();
+            } catch (IOException e) {
+                Log.e(TAG, "temp sockets not created", e);
+            }
+
+            mmInStream = tmpIn;
+            mmOutStream = tmpOut;
+        }
+
+        public void run() {
+            Log.i(TAG, "BEGIN mConnectedThread");
+            byte[] buffer = new byte[1024];
+            int bytes;
+
+            // Keep listening to the InputStream while connected
+            while (true) {
+                try {
+                    // Read from the InputStream
+                    bytes = mmInStream.read(buffer);
+                    
+                    Log.v(TAG,new String(buffer, 0, bytes - 1));
+                    
+                } catch (IOException e) {
+                    Log.e(TAG, "disconnected", e);
+                    break;
+                }
+            }
+        }
+
+        /**
+         * Write to the connected OutStream.
+         * @param buffer  The bytes to write
+         */
+        public void write(byte[] buffer) {
+            try {
+                mmOutStream.write(buffer);
+
+            } catch (IOException e) {
+                Log.e(TAG, "Exception during write", e);
+            }
+        }
+
+        public void cancel() {
+            try {
+                mmSocket.close();
+            } catch (IOException e) {
+                Log.e(TAG, "close() of connect socket failed", e);
+            }
+        }
+    }
+	
+	
+	
 	
 
 }
