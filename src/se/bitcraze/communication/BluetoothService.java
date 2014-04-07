@@ -1,10 +1,16 @@
 package se.bitcraze.communication;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
+import java.util.Set;
+import java.util.UUID;
 
 import android.app.Service;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothSocket;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -27,6 +33,9 @@ public class BluetoothService extends Service {
 	private LinkedHashSet<String> bluetoothDevicesName;
 	
 	private BluetoothInterface bluetoothInterface;
+	private Set<BluetoothDevice> bluetoothDevices;
+	private BluetoothSocket mBluetoothSocket = null;
+	private final UUID SPP_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
 	
 	public class BlueoothBinder extends Binder {
 		public BluetoothService getService() {
@@ -45,6 +54,7 @@ public class BluetoothService extends Service {
 		
 		Log.v(TAG, "onCreate BTService");
 		
+		bluetoothDevices = new HashSet<BluetoothDevice>();
 		bluetoothDevicesName = new LinkedHashSet<String>();
 		
 		// Register the BroadcastReceiver
@@ -74,6 +84,28 @@ public class BluetoothService extends Service {
 	public void startBluetoothDiscovery() {
 		if(checkBluetooth()){
 			mBluetoothAdapter.startDiscovery();
+		}
+	}
+	
+	public void cancelBluetoothDiscovery() {
+		mBluetoothAdapter.cancelDiscovery();
+	}
+	
+	public void connectBluetoothDevice() {
+		cancelBluetoothDiscovery();
+		
+		Object[] deviceses = bluetoothDevices.toArray();
+		BluetoothDevice mBluetoothDevice = (BluetoothDevice) deviceses[0];
+		try {
+			mBluetoothSocket = mBluetoothDevice.createInsecureRfcommSocketToServiceRecord(SPP_UUID);
+			InputStream input;
+			mBluetoothSocket.connect();
+			input = mBluetoothSocket.getInputStream();
+			byte[] b = new byte[1024];
+			int tmp = input.read(b);
+			Toast.makeText(this, new String(b, 0, tmp - 1), 0).show();
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
 	}
 	
@@ -109,7 +141,9 @@ public class BluetoothService extends Service {
 	            // Get the BluetoothDevice object from the Intent
 	            BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
 	            // Add the name and address to an array
+	            
 	            bluetoothDevicesName.add(device.getName() + "\n" + device.getAddress());
+	            bluetoothDevices.add(device);
 	            
 	            if (null != bluetoothInterface) {
 					bluetoothInterface.bluetoothDevicesUpdate(bluetoothDevicesName);
