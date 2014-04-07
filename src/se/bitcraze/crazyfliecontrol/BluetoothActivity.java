@@ -107,8 +107,8 @@ public class BluetoothActivity extends Activity {
 	
 	OnItemClickListener listListener = new OnItemClickListener() {
 		@Override
-		public void onItemClick(AdapterView<?> arg0, View arg1, int arg2, long arg3) {
-			mService.connectBluetoothDevice();
+		public void onItemClick(AdapterView<?> arg0, View arg1, int position, long id) {
+			mService.connect(position);
 		}
 	};
 	

@@ -31,6 +31,7 @@ public class BluetoothService extends Service {
 	private static final String TAG = "BTService";
 	
 	private BluetoothAdapter mBluetoothAdapter = null;
+	private ConnectThread mConnectThread;
 	private ConnectedThread mConnectedThread;
 	
 	private LinkedHashSet<String> bluetoothDevicesName;
@@ -39,6 +40,13 @@ public class BluetoothService extends Service {
 	private Set<BluetoothDevice> bluetoothDevices;
 	private BluetoothSocket mBluetoothSocket = null;
 	private final UUID SPP_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
+	
+    // Constants that indicate the current connection state
+	private int mState;
+    public static final int STATE_NONE = 0;       // we're doing nothing
+    public static final int STATE_LISTEN = 1;     // now listening for incoming connections
+    public static final int STATE_CONNECTING = 2; // now initiating an outgoing connection
+    public static final int STATE_CONNECTED = 3;  // now connected to a remote device
 	
 	public class BlueoothBinder extends Binder {
 		public BluetoothService getService() {
@@ -94,28 +102,61 @@ public class BluetoothService extends Service {
 		mBluetoothAdapter.cancelDiscovery();
 	}
 	
-	public void connectBluetoothDevice() {
-		cancelBluetoothDiscovery();
-		
-		// Cancel any thread currently running a connection
-        if (mConnectedThread != null) {
-        	mConnectedThread.cancel(); 
-        	mConnectedThread = null;
+	
+    /**
+     * Set the current state of the chat connection
+     * @param state  An integer defining the current connection state
+     */
+    private synchronized void setState(int state) {
+        mState = state;
+    }
+	
+    /**
+     * Start the ConnectThread to initiate a connection to a remote device.
+     * @param device  The BluetoothDevice to connect
+     * @param secure Socket Security type - Secure (true) , Insecure (false)
+     */
+    public synchronized void connect(int position) {
+    	
+    	Object[] deviceses = bluetoothDevices.toArray();
+		BluetoothDevice mBluetoothDevice = (BluetoothDevice) deviceses[position];
+
+        // Cancel any thread attempting to make a connection
+        if (mState == STATE_CONNECTING) {
+            if (mConnectThread != null) {mConnectThread.cancel(); mConnectThread = null;}
         }
-		
-		Object[] deviceses = bluetoothDevices.toArray();
-		BluetoothDevice mBluetoothDevice = (BluetoothDevice) deviceses[0];
-		
-		try {
-			mBluetoothSocket = mBluetoothDevice.createInsecureRfcommSocketToServiceRecord(SPP_UUID);
-			mBluetoothSocket.connect();
-			// Start the thread to manage the connection and perform transmissions
-	        mConnectedThread = new ConnectedThread(mBluetoothSocket, "Insecure");
-	        mConnectedThread.start();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
+
+        // Cancel any thread currently running a connection
+        if (mConnectedThread != null) {mConnectedThread.cancel(); mConnectedThread = null;}
+
+        // Start the thread to connect with the given device
+        mConnectThread = new ConnectThread(mBluetoothDevice);
+        mConnectThread.start();
+        setState(STATE_CONNECTING);
+    }
+	
+	
+    /**
+     * Start the ConnectedThread to begin managing a Bluetooth connection
+     * @param socket  The BluetoothSocket on which the connection was made
+     * @param device  The BluetoothDevice that has been connected
+     */
+    public synchronized void connected(BluetoothSocket socket, BluetoothDevice
+            device) {
+
+        // Cancel the thread that completed the connection
+        if (mConnectThread != null) {mConnectThread.cancel(); mConnectThread = null;}
+
+        // Cancel any thread currently running a connection
+        if (mConnectedThread != null) {mConnectedThread.cancel(); mConnectedThread = null;}
+
+        // Start the thread to manage the connection and perform transmissions
+        mConnectedThread = new ConnectedThread(socket,"Insecure");
+        mConnectedThread.start();
+
+        // Send the name of the connected device back to the UI Activity
+
+    }
 	
 	/**
 	 * 判斷藍芽裝置是否正常及開啟
@@ -162,6 +203,72 @@ public class BluetoothService extends Service {
 	    }
 	};    
 	
+	
+    /**
+     * This thread runs while attempting to make an outgoing connection
+     * with a device. It runs straight through; the connection either
+     * succeeds or fails.
+     */
+    private class ConnectThread extends Thread {
+        private final BluetoothSocket mmSocket;
+        private final BluetoothDevice mmDevice;
+        private String mSocketType;
+
+        public ConnectThread(BluetoothDevice device) {
+            mmDevice = device;
+            BluetoothSocket tmp = null;
+
+            // Get a BluetoothSocket for a connection with the
+            // given BluetoothDevice
+            try {
+                tmp = device.createInsecureRfcommSocketToServiceRecord(
+                		SPP_UUID);
+            } catch (IOException e) {
+                Log.e(TAG, "Socket Type: " + mSocketType + "create() failed", e);
+            }
+            mmSocket = tmp;
+        }
+
+        public void run() {
+            Log.i(TAG, "BEGIN mConnectThread SocketType:" + mSocketType);
+            setName("ConnectThread" + mSocketType);
+
+            // Always cancel discovery because it will slow down a connection
+            mBluetoothAdapter.cancelDiscovery();
+
+            // Make a connection to the BluetoothSocket
+            try {
+                // This is a blocking call and will only return on a
+                // successful connection or an exception
+                mmSocket.connect();
+            } catch (IOException e) {
+                // Close the socket
+                try {
+                    mmSocket.close();
+                } catch (IOException e2) {
+                    Log.e(TAG, "unable to close() " + mSocketType +
+                            " socket during connection failure", e2);
+                }
+                return;
+            }
+
+            // Reset the ConnectThread because we're done
+            synchronized (BluetoothService.this) {
+                mConnectThread = null;
+            }
+
+            // Start the connected thread
+            connected(mmSocket, mmDevice);
+        }
+
+        public void cancel() {
+            try {
+                mmSocket.close();
+            } catch (IOException e) {
+                Log.e(TAG, "close() of connect " + mSocketType + " socket failed", e);
+            }
+        }
+    }
 	
 	/**
      * This thread runs during a connection with a remote device.
