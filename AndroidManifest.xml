@@ -7,6 +7,9 @@
     <uses-sdk
         android:minSdkVersion="13"
         android:targetSdkVersion="15" />
+    
+    <uses-permission android:name="android.permission.BLUETOOTH" />
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
 
     <uses-feature android:name="android.hardware.usb.host" />
 
@@ -44,6 +47,12 @@
             <meta-data android:value="se.bitcraze.crazyfliecontrol.MainActivity" 
                 android:name="android.support.PARENT_ACTIVITY"/>
         </activity>
+        
+        <service android:name="se.bitcraze.communication.BluetoothService" >
+        </service>
+        
+        
+
     </application>
 
 </manifest>

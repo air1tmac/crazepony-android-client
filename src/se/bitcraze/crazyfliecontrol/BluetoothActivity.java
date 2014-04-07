@@ -3,13 +3,19 @@ package se.bitcraze.crazyfliecontrol;
 
 import java.util.LinkedHashSet;
 
+import se.bitcraze.communication.BluetoothInterface;
 import se.bitcraze.communication.BluetoothService;
+import se.bitcraze.communication.BluetoothService.BlueoothBinder;
 import android.app.Activity;
 import android.app.ProgressDialog;
+import android.content.ComponentName;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.content.pm.ActivityInfo;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.support.v4.app.NavUtils;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -21,6 +27,9 @@ import android.widget.ListView;
 public class BluetoothActivity extends Activity {
 
 	private ProgressDialog progressDialog;
+	
+	BluetoothService mService;
+    boolean mBound = false;
 	
 	private LinkedHashSet<String> bluetoothDevicesName;
 	private ListView mBluetoothList;
@@ -34,19 +43,32 @@ public class BluetoothActivity extends Activity {
 		
 		this.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE);
 		
-		bluetoothDevicesName = new LinkedHashSet<String>();
-		bluetoothDevicesName.add("tttt" + "\n" + "bbbbbb");
-		bluetoothDevicesName.add("mmmtt" + "\n" + "bbbbbb");
 		mBluetoothList = (ListView) findViewById(R.id.bluetooth_devices_list);
-		mBluetoothList.setAdapter(new BluetoothAdapter(this, bluetoothDevicesName));
 		mBluetoothList.setOnItemClickListener(listListener);
-		
+
 	}
+	
+	@Override
+    protected void onStart() {
+        super.onStart();
+        // Bind to the service
+        Intent intent = new Intent(this, BluetoothService.class);
+        bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
+    }
 	
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.activity_bluetooth, menu);
         return super.onCreateOptionsMenu(menu);
+    }
+    
+    
+    @Override
+    protected void onStop() {
+        super.onStop();
+        // Unbind from the service
+        unbindService(mConnection);
+        mBound = false;
     }
 
     @SuppressWarnings("deprecation")
@@ -73,14 +95,15 @@ public class BluetoothActivity extends Activity {
         }
         return true;
     }
-	
-	private void startBluetoothService() {
-		startService(new Intent(this, BluetoothService.class));
+    
+    private void updateBluetoothList() {
+    	if (null == bluetoothDevicesName) {
+			return;
+		}
+    	mBluetoothList.setAdapter(new BluetoothAdapter(this, bluetoothDevicesName));
 	}
 	
-	private void stopBluetoothService() {
-		stopService(new Intent(this, BluetoothService.class));
-	}
+
 	
 	OnItemClickListener listListener = new OnItemClickListener() {
 		@Override
@@ -88,6 +111,38 @@ public class BluetoothActivity extends Activity {
 			
 		}
 	};
+	
+	
+    /** Defines callbacks for service binding, passed to bindService() */
+    private ServiceConnection mConnection = new ServiceConnection() {
+
+        @Override
+        public void onServiceConnected(ComponentName className,
+                IBinder service) {
+            // We've bound to LocalService, cast the IBinder and get LocalService instance
+        	BlueoothBinder binder = (BlueoothBinder) service;
+            mService = binder.getService();
+            mBound = true;
+            
+            //注册回调接口来接收BluetoothService的变化  
+            mService.setBluetoothInterface(new BluetoothInterface() {  
+                  
+                @Override  
+                public void bluetoothDevicesUpdate(LinkedHashSet<String> bluetoothDevices) {  
+                	bluetoothDevicesName = bluetoothDevices;
+                	updateBluetoothList();
+                }  
+            }); 
+            
+            //开启第一次蓝牙扫描
+            mService.startBluetoothDiscovery();
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName arg0) {
+            mBound = false;
+        }
+    };
 	
 }
 

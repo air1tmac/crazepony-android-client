@@ -9,41 +9,47 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.os.Binder;
 import android.os.IBinder;
 import android.util.Log;
 import android.widget.Toast;
 
+
+
 public class BluetoothService extends Service {
+	
+	// Binder given to clients
+    private final IBinder mBinder = new BlueoothBinder();
 	
 	private static final String TAG = "BTService";
 	
 	private BluetoothAdapter mBluetoothAdapter = null;
-	private final int REQUEST_ENABLE_BT = 1;
 	private LinkedHashSet<String> bluetoothDevicesName;
+	
+	private BluetoothInterface bluetoothInterface;
+	
+	public class BlueoothBinder extends Binder {
+		public BluetoothService getService() {
+            return BluetoothService.this;
+        }
+    }
 	
 	@Override
 	public IBinder onBind(Intent intent) {
-		// TODO Auto-generated method stub
-		return null;
+		return mBinder;
 	}
 	
 	@Override
 	public void onCreate() {
 		super.onCreate();
 		
-		Log.v(TAG, "start BTService");
+		Log.v(TAG, "onCreate BTService");
 		
 		bluetoothDevicesName = new LinkedHashSet<String>();
 		
 		// Register the BroadcastReceiver
 		IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
 		registerReceiver(mReceiver, filter); // Don't forget to unregister during onDestroy
-		
-		if(checkBluetooth()){
-			mBluetoothAdapter.startDiscovery();
-		}
-		
-		
 	}
 
 	@Override
@@ -57,6 +63,20 @@ public class BluetoothService extends Service {
 		return Service.START_STICKY;
 	}
 	
+
+	
+	
+	public void  setBluetoothInterface(BluetoothInterface bluetoothInter) {
+		this.bluetoothInterface = bluetoothInter;
+	}
+	
+	
+	public void startBluetoothDiscovery() {
+		if(checkBluetooth()){
+			mBluetoothAdapter.startDiscovery();
+		}
+	}
+	
 	/**
 	 * 判斷藍芽裝置是否正常及開啟
 	 * @return 藍芽裝置是否正常及開啟 (true = 沒問題)
@@ -65,13 +85,13 @@ public class BluetoothService extends Service {
 		mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 		// 裝置不支援藍芽
 		if (mBluetoothAdapter == null) {
-			Toast.makeText(this, "本裝置不支援藍芽", Toast.LENGTH_SHORT).show();
+			Toast.makeText(this, "本设备不支持蓝牙", Toast.LENGTH_SHORT).show();
 			return false;
 		}
 
 		// 藍芽沒有開啟
 		if (!mBluetoothAdapter.isEnabled()) {
-			Toast.makeText(this, "藍芽没有开启", Toast.LENGTH_SHORT).show();
+			Toast.makeText(this, "蓝牙没有开启", Toast.LENGTH_SHORT).show();
 			return false;
 		}
 
@@ -90,6 +110,10 @@ public class BluetoothService extends Service {
 	            BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
 	            // Add the name and address to an array
 	            bluetoothDevicesName.add(device.getName() + "\n" + device.getAddress());
+	            
+	            if (null != bluetoothInterface) {
+					bluetoothInterface.bluetoothDevicesUpdate(bluetoothDevicesName);
+				}
 	            
 	            Log.v(TAG, device.getName() + "\n" + device.getAddress());
 	        }
