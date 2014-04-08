@@ -87,6 +87,8 @@ public class BluetoothActivity extends Activity {
 	    	progressDialog.setCancelable(false);
 	    	progressDialog.setButton("Cancel", new DialogInterface.OnClickListener() {
 	             public void onClick(DialogInterface dialog, int i){
+	            	 //取消扫描
+	            	 mService.cancelBluetoothDiscovery();
 	             }
 	         });
 	    	

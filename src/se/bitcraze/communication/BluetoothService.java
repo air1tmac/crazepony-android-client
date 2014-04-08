@@ -96,6 +96,28 @@ public class BluetoothService extends Service {
 	
 	public void startBluetoothDiscovery() {
 		if(checkBluetooth()){
+			//获取已经配对的设备
+			/*
+			Set<BluetoothDevice> pairedDevices = mBluetoothAdapter.getBondedDevices();
+			if (pairedDevices.size() > 0) {
+			    // Loop through paired devices
+			    for (BluetoothDevice device : pairedDevices) {
+			    	bluetoothDevicesName.add(device.getName() + "\n" + device.getAddress());
+		            bluetoothDevices.add(device);
+		            
+		            if (null != bluetoothInterface) {
+						bluetoothInterface.bluetoothDevicesUpdate(bluetoothDevicesName);
+					}
+			    }
+			}
+			*/
+			if (null != bluetoothInterface) {
+				Log.v(TAG,"lll: "+bluetoothDevicesName.size());
+				bluetoothInterface.bluetoothDevicesUpdate(bluetoothDevicesName);
+			}
+			
+			
+			//扫描新的设备
 			mBluetoothAdapter.startDiscovery();
 		}
 	}
@@ -170,13 +192,11 @@ public class BluetoothService extends Service {
 	 */
 	private boolean checkBluetooth() {
 		mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-		// 裝置不支援藍芽
 		if (mBluetoothAdapter == null) {
 			Toast.makeText(this, "本设备不支持蓝牙", Toast.LENGTH_SHORT).show();
 			return false;
 		}
 
-		// 藍芽沒有開啟
 		if (!mBluetoothAdapter.isEnabled()) {
 			Toast.makeText(this, "蓝牙没有开启", Toast.LENGTH_SHORT).show();
 			
@@ -205,6 +225,7 @@ public class BluetoothService extends Service {
 	            bluetoothDevices.add(device);
 	            
 	            if (null != bluetoothInterface) {
+	            	Log.v(TAG,""+bluetoothDevicesName.size());
 					bluetoothInterface.bluetoothDevicesUpdate(bluetoothDevicesName);
 				}
 	            
