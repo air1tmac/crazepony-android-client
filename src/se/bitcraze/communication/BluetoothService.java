@@ -179,6 +179,10 @@ public class BluetoothService extends Service {
 		// 藍芽沒有開啟
 		if (!mBluetoothAdapter.isEnabled()) {
 			Toast.makeText(this, "蓝牙没有开启", Toast.LENGTH_SHORT).show();
+			
+			if (null != bluetoothInterface) {
+				bluetoothInterface.turnOnBluetooth(mBluetoothAdapter);
+			}
 			return false;
 		}
 

@@ -11,13 +11,13 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.TextView;
 
-public class BluetoothAdapter extends BaseAdapter {
+public class BluetoothItemAdapter extends BaseAdapter {
 	private LayoutInflater mLayoutInflater = null;
 	private View mInflater = null;
 	private List<String> mData = null;
 	private Context context = null;
 
-	BluetoothAdapter(Context context, HashSet<String> data) {
+	BluetoothItemAdapter(Context context, HashSet<String> data) {
 		mLayoutInflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 		this.mData = new ArrayList<String>(data);
 		this.context = context;

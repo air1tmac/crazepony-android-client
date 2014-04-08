@@ -8,6 +8,7 @@ import se.bitcraze.communication.BluetoothService;
 import se.bitcraze.communication.BluetoothService.BlueoothBinder;
 import android.app.Activity;
 import android.app.ProgressDialog;
+import android.bluetooth.BluetoothAdapter;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -91,6 +92,9 @@ public class BluetoothActivity extends Activity {
 	    	
 	    	progressDialog.show();
 	    	
+	    	//开启蓝牙扫描
+            mService.startBluetoothDiscovery();
+	    	
 			break;
         }
         return true;
@@ -100,7 +104,7 @@ public class BluetoothActivity extends Activity {
     	if (null == bluetoothDevicesName) {
 			return;
 		}
-    	mBluetoothList.setAdapter(new BluetoothAdapter(this, bluetoothDevicesName));
+    	mBluetoothList.setAdapter(new BluetoothItemAdapter(this, bluetoothDevicesName));
 	}
     
     
@@ -109,6 +113,11 @@ public class BluetoothActivity extends Activity {
 		startActivity(intent);
 	}
 	
+    
+    private void neeTurnOnBluetooth(BluetoothAdapter bluetoothAdapter) {
+    	Intent enableBtIntent = new Intent(bluetoothAdapter.ACTION_REQUEST_ENABLE);
+	    startActivityForResult(enableBtIntent, 1);
+	}
 
 	
 	OnItemClickListener listListener = new OnItemClickListener() {
@@ -143,6 +152,12 @@ public class BluetoothActivity extends Activity {
 				public void hasConnected(String bluetoothDevices) {
 					//切换到bt数据页面
 					toBluetoothDataActiviy();
+				}
+
+				@Override
+				public void turnOnBluetooth(BluetoothAdapter bluetoothAdapter) {
+					//开启蓝牙
+					neeTurnOnBluetooth(bluetoothAdapter);
 				}  
             }); 
             
