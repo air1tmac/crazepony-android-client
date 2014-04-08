@@ -2,17 +2,25 @@ package se.bitcraze.crazyfliecontrol;
 
 
 import android.app.Activity;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.ActivityInfo;
 import android.os.Bundle;
 import android.support.v4.app.NavUtils;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.ToggleButton;
 
 public class BlueToothDataActivity extends Activity {
-
+	
+	private static final String TAG = "BlueToothDataActivity";
+	
 	private ToggleButton togglebutton;
+	private MsgReceiver msgReceiver;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -22,6 +30,13 @@ public class BlueToothDataActivity extends Activity {
 		getActionBar().setDisplayHomeAsUpEnabled(true);
 
 		this.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE);
+		
+		
+        //动态注册广播接收器  
+        msgReceiver = new MsgReceiver();  
+        IntentFilter intentFilter = new IntentFilter();  
+        intentFilter.addAction("com.crazepony.communication.RECEIVER");  
+        registerReceiver(msgReceiver, intentFilter);  
 
 		togglebutton = (ToggleButton) findViewById(R.id.bluetoothButton);
 		togglebutton.setOnClickListener(new OnClickListener() {
@@ -47,6 +62,20 @@ public class BlueToothDataActivity extends Activity {
         }
         return true;
     }
+    
+    /** 
+     * 广播接收器 
+     */  
+    public class MsgReceiver extends BroadcastReceiver{  
+  
+        @Override  
+        public void onReceive(Context context, Intent intent) {  
+            //拿到进度，更新UI  
+            String data = intent.getStringExtra("data");
+            Log.v(TAG,data);
+        }  
+          
+    }  
 	
 
 	

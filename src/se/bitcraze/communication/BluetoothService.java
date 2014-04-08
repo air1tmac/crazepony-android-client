@@ -41,6 +41,8 @@ public class BluetoothService extends Service {
 	private BluetoothSocket mBluetoothSocket = null;
 	private final UUID SPP_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
 	
+	private Intent intent = new Intent("com.crazepony.communication.RECEIVER");  
+	
     // Constants that indicate the current connection state
 	private int mState;
     public static final int STATE_NONE = 0;       // we're doing nothing
@@ -309,6 +311,10 @@ public class BluetoothService extends Service {
                     bytes = mmInStream.read(buffer);
                     
                     Log.v(TAG,new String(buffer, 0, bytes - 1));
+                    
+                  //发送Action为com.example.communication.RECEIVER的广播  
+                    intent.putExtra("data", new String(buffer, 0, bytes - 1));  
+                    sendBroadcast(intent); 
                     
                 } catch (IOException e) {
                     Log.e(TAG, "disconnected", e);

@@ -46,6 +46,9 @@
         <activity android:name="BlueToothDataActivity">
             <meta-data android:value="se.bitcraze.crazyfliecontrol.MainActivity" 
                 android:name="android.support.PARENT_ACTIVITY"/>
+            <intent-filter>
+                <action android:name="com.crazepony.communication.RECEIVER" />
+            </intent-filter>
         </activity>
         
         <service android:name="se.bitcraze.communication.BluetoothService" >
