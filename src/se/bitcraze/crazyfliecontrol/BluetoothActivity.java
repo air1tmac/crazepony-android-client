@@ -102,6 +102,12 @@ public class BluetoothActivity extends Activity {
 		}
     	mBluetoothList.setAdapter(new BluetoothAdapter(this, bluetoothDevicesName));
 	}
+    
+    
+    private void toBluetoothDataActiviy() {
+    	Intent intent = new Intent(this, BlueToothDataActivity.class);
+		startActivity(intent);
+	}
 	
 
 	
@@ -131,7 +137,13 @@ public class BluetoothActivity extends Activity {
                 public void bluetoothDevicesUpdate(LinkedHashSet<String> bluetoothDevices) {  
                 	bluetoothDevicesName = bluetoothDevices;
                 	updateBluetoothList();
-                }  
+                }
+
+				@Override
+				public void hasConnected(String bluetoothDevices) {
+					//切换到bt数据页面
+					toBluetoothDataActiviy();
+				}  
             }); 
             
             //开启第一次蓝牙扫描

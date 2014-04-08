@@ -157,7 +157,11 @@ public class BluetoothService extends Service {
         mConnectedThread.start();
 
         // Send the name of the connected device back to the UI Activity
+        if (null != bluetoothInterface) {
+			bluetoothInterface.hasConnected(device.getName());
+		}
 
+        setState(STATE_CONNECTED);
     }
 	
 	/**

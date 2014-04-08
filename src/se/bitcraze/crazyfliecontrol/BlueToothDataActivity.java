@@ -1,6 +1,8 @@
 package se.bitcraze.crazyfliecontrol;
 
 
+import java.util.ArrayList;
+
 import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -13,6 +15,7 @@ import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.widget.TextView;
 import android.widget.ToggleButton;
 
 public class BlueToothDataActivity extends Activity {
@@ -20,12 +23,18 @@ public class BlueToothDataActivity extends Activity {
 	private static final String TAG = "BlueToothDataActivity";
 	
 	private ToggleButton togglebutton;
+	private TextView mDataTextView;
 	private MsgReceiver msgReceiver;
+	
+	private ArrayList<String> btDataArrayList;
+	
+	
+	
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.bluetooth_data);
+		setContentView(R.layout.activity_bluetooth_data);
 		
 		getActionBar().setDisplayHomeAsUpEnabled(true);
 
@@ -37,6 +46,10 @@ public class BlueToothDataActivity extends Activity {
         IntentFilter intentFilter = new IntentFilter();  
         intentFilter.addAction("com.crazepony.communication.RECEIVER");  
         registerReceiver(msgReceiver, intentFilter);  
+        
+        btDataArrayList = new ArrayList<String>();
+        mDataTextView = (TextView) findViewById(R.id.dataTextView);
+        mDataTextView.setText("");
 
 		togglebutton = (ToggleButton) findViewById(R.id.bluetoothButton);
 		togglebutton.setOnClickListener(new OnClickListener() {
@@ -73,12 +86,22 @@ public class BlueToothDataActivity extends Activity {
             //拿到进度，更新UI  
             String data = intent.getStringExtra("data");
             Log.v(TAG,data);
+            
+            if (btDataArrayList.size() > 8) {
+				btDataArrayList.remove(0);
+			}
+            btDataArrayList.add(data);
+            
+            String dataString = "";
+            for(int i=0;i<btDataArrayList.size();i++)
+            {
+            	dataString = dataString + "\n" + (String)btDataArrayList.get(i);
+            }
+            
+            mDataTextView.setText(dataString);
         }  
           
     }  
-	
-
-	
 }
 
 
