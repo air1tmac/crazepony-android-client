@@ -65,7 +65,7 @@ public class BluetoothService extends Service {
 	public void onCreate() {
 		super.onCreate();
 		
-		Log.v(TAG, "onCreate BTService");
+		Log.w(TAG, "onCreate BTService");
 		
 		bluetoothDevices = new HashSet<BluetoothDevice>();
 		bluetoothDevicesName = new LinkedHashSet<String>();
@@ -77,7 +77,19 @@ public class BluetoothService extends Service {
 
 	@Override
 	public void onDestroy() {
+		//关闭所有的线程
+        if (mConnectThread != null) {
+            mConnectThread.cancel();
+            mConnectThread = null;
+        }
+
+        if (mConnectedThread != null) {
+            mConnectedThread.cancel();
+            mConnectedThread = null;
+        }
+		
 		super.onDestroy();
+		Log.w(TAG, "onDestroy BTService");
 	}
 
 	@Override
@@ -112,10 +124,8 @@ public class BluetoothService extends Service {
 			}
 			*/
 			if (null != bluetoothInterface) {
-				Log.v(TAG,"lll: "+bluetoothDevicesName.size());
 				bluetoothInterface.bluetoothDevicesUpdate(bluetoothDevicesName);
 			}
-			
 			
 			//扫描新的设备
 			mBluetoothAdapter.startDiscovery();

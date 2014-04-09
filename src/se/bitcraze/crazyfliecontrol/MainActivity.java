@@ -30,6 +30,7 @@ package se.bitcraze.crazyfliecontrol;
 import java.io.IOException;
 import java.util.Locale;
 
+import se.bitcraze.communication.BluetoothService;
 import se.bitcraze.crazyfliecontrol.SelectConnectionDialogFragment.SelectCrazyflieDialogListener;
 import se.bitcraze.crazyflielib.ConnectionAdapter;
 import se.bitcraze.crazyflielib.CrazyradioLink;
@@ -217,6 +218,10 @@ public class MainActivity extends Activity {
         resetInputMethod();
         setControlConfig();
         checkScreenLock();
+        
+        //开启btservice，一直处于运行状态
+        Intent intent = new Intent(this, BluetoothService.class);
+        startService(intent);
     }
 
     @Override
@@ -239,6 +244,10 @@ public class MainActivity extends Activity {
         unregisterReceiver(mUsbReceiver);
         mSoundPool.release();
         mSoundPool = null;
+        
+        Intent intent = new Intent(this, BluetoothService.class);
+        stopService(intent);
+        
         super.onDestroy();
     }
 
