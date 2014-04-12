@@ -44,9 +44,9 @@ public class BluetoothService extends Service {
 	private Intent intent = new Intent("com.crazepony.communication.RECEIVER");  
 	
     // Constants that indicate the current connection state
-	private int mState;
+	public int mState = STATE_NONE;
     public static final int STATE_NONE = 0;       // we're doing nothing
-    public static final int STATE_LISTEN = 1;     // now listening for incoming connections
+    public static final int STATE_SCANNING = 1;     // now listening for incoming connections
     public static final int STATE_CONNECTING = 2; // now initiating an outgoing connection
     public static final int STATE_CONNECTED = 3;  // now connected to a remote device
 	
@@ -128,6 +128,7 @@ public class BluetoothService extends Service {
 			}
 			
 			//扫描新的设备
+			setState(STATE_SCANNING);
 			mBluetoothAdapter.startDiscovery();
 		}
 	}
@@ -143,6 +144,9 @@ public class BluetoothService extends Service {
      */
     private synchronized void setState(int state) {
         mState = state;
+        if (null != bluetoothInterface) {
+			bluetoothInterface.stateUpdate(state);
+		}
     }
 	
     /**
@@ -195,6 +199,21 @@ public class BluetoothService extends Service {
 
         setState(STATE_CONNECTED);
     }
+    
+    
+    /**
+     * Indicate that the connection was lost and notify the UI Activity.
+     */
+    private void connectionLost() {
+        // Send a failure message back to the Activity
+    	setState(STATE_NONE);
+
+        // Cancel the thread that completed the connection
+        if (mConnectThread != null) {mConnectThread.cancel(); mConnectThread = null;}
+
+        // Cancel any thread currently running a connection
+        if (mConnectedThread != null) {mConnectedThread.cancel(); mConnectedThread = null;}
+    }
 	
 	/**
 	 * 判斷藍芽裝置是否正常及開啟
@@ -209,10 +228,6 @@ public class BluetoothService extends Service {
 
 		if (!mBluetoothAdapter.isEnabled()) {
 			Toast.makeText(this, "蓝牙没有开启", Toast.LENGTH_SHORT).show();
-			
-			if (null != bluetoothInterface) {
-				bluetoothInterface.turnOnBluetooth(mBluetoothAdapter);
-			}
 			return false;
 		}
 
@@ -357,6 +372,7 @@ public class BluetoothService extends Service {
                     
                 } catch (IOException e) {
                     Log.e(TAG, "disconnected", e);
+                    connectionLost();
                     break;
                 }
             }

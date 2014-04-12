@@ -8,7 +8,6 @@ import se.bitcraze.communication.BluetoothService;
 import se.bitcraze.communication.BluetoothService.BlueoothBinder;
 import android.app.Activity;
 import android.app.ProgressDialog;
-import android.bluetooth.BluetoothAdapter;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -116,10 +115,7 @@ public class BluetoothActivity extends Activity {
 	}
 	
     
-    private void neeTurnOnBluetooth(BluetoothAdapter bluetoothAdapter) {
-    	Intent enableBtIntent = new Intent(bluetoothAdapter.ACTION_REQUEST_ENABLE);
-	    startActivityForResult(enableBtIntent, 1);
-	}
+
 
 	
 	OnItemClickListener listListener = new OnItemClickListener() {
@@ -157,10 +153,10 @@ public class BluetoothActivity extends Activity {
 				}
 
 				@Override
-				public void turnOnBluetooth(BluetoothAdapter bluetoothAdapter) {
-					//开启蓝牙
-					neeTurnOnBluetooth(bluetoothAdapter);
-				}  
+				public void stateUpdate(int state) {
+					
+				}
+  
             }); 
             
             //开启第一次蓝牙扫描

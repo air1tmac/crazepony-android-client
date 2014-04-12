@@ -28,9 +28,12 @@
 package se.bitcraze.crazyfliecontrol;
 
 import java.io.IOException;
+import java.util.LinkedHashSet;
 import java.util.Locale;
 
+import se.bitcraze.communication.BluetoothInterface;
 import se.bitcraze.communication.BluetoothService;
+import se.bitcraze.communication.BluetoothService.BlueoothBinder;
 import se.bitcraze.crazyfliecontrol.SelectConnectionDialogFragment.SelectCrazyflieDialogListener;
 import se.bitcraze.crazyflielib.ConnectionAdapter;
 import se.bitcraze.crazyflielib.CrazyradioLink;
@@ -39,10 +42,13 @@ import se.bitcraze.crazyflielib.Link;
 import se.bitcraze.crazyflielib.crtp.CommanderPacket;
 import android.app.Activity;
 import android.app.ProgressDialog;
+import android.bluetooth.BluetoothAdapter;
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.hardware.usb.UsbDevice;
@@ -54,6 +60,7 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.InputDevice;
@@ -107,6 +114,11 @@ public class MainActivity extends Activity {
     private boolean mLoaded;
     private int mSoundConnect;
     private int mSoundDisconnect;
+    
+    private Menu mainActivityMenu;
+    private BluetoothAdapter mBluetoothAdapter = null;
+    BluetoothService mService;
+    private static final int REQUEST_ENABLE_BT = 1;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -131,6 +143,12 @@ public class MainActivity extends Activity {
 
         initializeSounds();
         
+        //开启btservice，一直处于运行状态
+        Intent intent = new Intent(this, BluetoothService.class);
+        startService(intent);
+
+        
+        Log.v(TAG,"onCreate");
         
     }
 
@@ -174,9 +192,11 @@ public class MainActivity extends Activity {
         }
     }
 
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.activity_main, menu);
+        mainActivityMenu = menu;
         return super.onCreateOptionsMenu(menu);
     }
 
@@ -184,12 +204,9 @@ public class MainActivity extends Activity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
         	case R.id.action_bluetooth:
-	        	Intent intent1 = new Intent(this, BluetoothActivity.class);
-	    		startActivity(intent1);
+	        	beginConnectBluetooth();
 	    		break;
         	case R.id.menu_bluetooth:
-        		Intent intent = new Intent(this, BlueToothDataActivity.class);
-        		startActivity(intent);
         		break;
             case R.id.menu_connect:
                 try {
@@ -211,6 +228,16 @@ public class MainActivity extends Activity {
         }
         return true;
     }
+    
+	@Override
+    protected void onStart() {
+        super.onStart();
+        // Bind to the service
+        Intent intent = new Intent(this, BluetoothService.class);
+        bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
+        
+        Log.v(TAG,"onStart");
+    }
 
     @Override
     public void onResume() {
@@ -219,15 +246,13 @@ public class MainActivity extends Activity {
         setControlConfig();
         checkScreenLock();
         
-        //开启btservice，一直处于运行状态
-        Intent intent = new Intent(this, BluetoothService.class);
-        startService(intent);
+        Log.v(TAG,"onResume");
     }
 
     @Override
     protected void onRestart() {
         super.onRestart();
-        onResume();
+        Log.v(TAG,"onRestart");
     }
 
     @Override
@@ -237,10 +262,21 @@ public class MainActivity extends Activity {
         if (mCrazyradioLink != null) {
             linkDisconnect();
         }
+        Log.v(TAG,"onPause");
+    }
+    
+    @Override
+    protected void onStop() {
+        super.onStop();
+        // Unbind from the service
+        unbindService(mConnection);
+        Log.v(TAG,"onStop");
     }
 
     @Override
     protected void onDestroy() {
+    	super.onDestroy();
+    	
         unregisterReceiver(mUsbReceiver);
         mSoundPool.release();
         mSoundPool = null;
@@ -248,7 +284,7 @@ public class MainActivity extends Activity {
         Intent intent = new Intent(this, BluetoothService.class);
         stopService(intent);
         
-        super.onDestroy();
+        Log.v(TAG,"onDestroy");
     }
 
     @Override
@@ -267,6 +303,20 @@ public class MainActivity extends Activity {
 
             }
         }, 2000);
+    }
+    
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        switch (requestCode) {
+        case REQUEST_ENABLE_BT:
+            // When the request to enable Bluetooth returns
+            if (resultCode == Activity.RESULT_OK) {
+                // Bluetooth is now enabled
+            	Intent intent = new Intent(this, BluetoothActivity.class);
+        		startActivity(intent);
+            } else {
+            	Toast.makeText(this, "蓝牙没有开启", Toast.LENGTH_SHORT).show();
+            }
+        }
     }
 
     private void updateFlightData(){
@@ -659,6 +709,75 @@ public class MainActivity extends Activity {
         public void OnReturnedToCenter() {
             mControls.setLeftAnalogY(0);
             mControls.setLeftAnalogX(0);
+        }
+    };
+    
+
+    private void beginConnectBluetooth(){
+    	mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+		
+		if (mBluetoothAdapter == null) {
+			Toast.makeText(this, "本设备不支持蓝牙", Toast.LENGTH_SHORT).show();
+			return;
+		}
+
+		if (!mBluetoothAdapter.isEnabled()) {
+			Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+		    startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
+			return;
+		}else{
+			//进入蓝牙列表页面
+			Intent intent = new Intent(this, BluetoothActivity.class);
+    		startActivity(intent);
+		}
+		
+    }
+    
+    private void updateBluetoothItem(int state){
+    	if(state == BluetoothService.STATE_SCANNING || 
+				state == BluetoothService.STATE_CONNECTING){
+			mainActivityMenu.findItem(R.id.action_bluetooth).setIcon(  
+                    R.drawable.ic_bluetooth_search);
+			
+		}else if(state == BluetoothService.STATE_CONNECTED){
+			mainActivityMenu.findItem(R.id.action_bluetooth).setIcon(  
+                     R.drawable.ic_bluetooth_connected);
+		}
+    }
+    
+    /** Defines callbacks for service binding, passed to bindService() */
+    private ServiceConnection mConnection = new ServiceConnection() {
+
+        @Override
+        public void onServiceConnected(ComponentName className,
+                IBinder service) {
+            // We've bound to LocalService, cast the IBinder and get LocalService instance
+        	BlueoothBinder binder = (BlueoothBinder) service;
+            mService = binder.getService();
+            updateBluetoothItem(mService.mState);	
+            
+            //注册回调接口来接收BluetoothService的变化  
+            mService.setBluetoothInterface(new BluetoothInterface() {  
+                  
+                @Override  
+                public void bluetoothDevicesUpdate(LinkedHashSet<String> bluetoothDevices) {  
+                }
+
+				@Override
+				public void hasConnected(String bluetoothDevices) {
+					//切换到bt数据页面
+				}
+
+				@Override
+				public void stateUpdate(int state) {
+					updateBluetoothItem(state);					
+				}
+
+            }); 
+        }
+        
+        @Override
+        public void onServiceDisconnected(ComponentName arg0) {
         }
     };
 
