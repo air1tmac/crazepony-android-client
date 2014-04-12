@@ -31,6 +31,7 @@ import java.io.IOException;
 import java.util.LinkedHashSet;
 import java.util.Locale;
 
+import se.bitcraze.communication.BluetoothInfo;
 import se.bitcraze.communication.BluetoothInterface;
 import se.bitcraze.communication.BluetoothService;
 import se.bitcraze.communication.BluetoothService.BlueoothBinder;
@@ -760,7 +761,7 @@ public class MainActivity extends Activity {
             mService.setBluetoothInterface(new BluetoothInterface() {  
                   
                 @Override  
-                public void bluetoothDevicesUpdate(LinkedHashSet<String> bluetoothDevices) {  
+                public void bluetoothDevicesUpdate(LinkedHashSet<BluetoothInfo> bluetoothDevices) {  
                 }
 
 				@Override

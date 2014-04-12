@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 
+import se.bitcraze.communication.BluetoothInfo;
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -14,12 +15,12 @@ import android.widget.TextView;
 public class BluetoothItemAdapter extends BaseAdapter {
 	private LayoutInflater mLayoutInflater = null;
 	private View mInflater = null;
-	private List<String> mData = null;
+	private List<BluetoothInfo> mData = null;
 	private Context context = null;
 
-	BluetoothItemAdapter(Context context, HashSet<String> data) {
+	BluetoothItemAdapter(Context context, HashSet<BluetoothInfo> data) {
 		mLayoutInflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-		this.mData = new ArrayList<String>(data);
+		this.mData = new ArrayList<BluetoothInfo>(data);
 		this.context = context;
 	}
 
@@ -36,11 +37,26 @@ public class BluetoothItemAdapter extends BaseAdapter {
 	}
 
 	public View getView(int position, View convertView, ViewGroup parent) {
+		ViewHolder holder;
+		
 		if (mData != null && mData.size() > 0) {
-			mInflater = mLayoutInflater.inflate(android.R.layout.simple_list_item_1, null);
-			((TextView) mInflater.findViewById(android.R.id.text1)).setText(mData.get(position));
+			mInflater = mLayoutInflater.inflate(R.layout.view_bluetooth_line_item, null);
+			holder = new ViewHolder();
+			
+			holder.txtDeviceName = (TextView) mInflater.findViewById(R.id.device_name);
+			holder.txtDeviceMac = (TextView) mInflater.findViewById(R.id.device_mac);
+			mInflater.setTag(holder);
+			
+			holder.txtDeviceName.setText(mData.get(position).getDeviceName());
+			holder.txtDeviceMac.setText(mData.get(position).getDeviceMac());
 		}
 		return mInflater;
 	}
+	
+	
+    static class ViewHolder {
+        TextView txtDeviceName;
+        TextView txtDeviceMac;
+    }
 
 }

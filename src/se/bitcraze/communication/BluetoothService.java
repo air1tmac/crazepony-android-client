@@ -34,7 +34,7 @@ public class BluetoothService extends Service {
 	private ConnectThread mConnectThread;
 	private ConnectedThread mConnectedThread;
 	
-	private LinkedHashSet<String> bluetoothDevicesName;
+	private LinkedHashSet<BluetoothInfo> bluetoothDevicesInfoList;
 	
 	private BluetoothInterface bluetoothInterface;
 	private Set<BluetoothDevice> bluetoothDevices;
@@ -68,7 +68,15 @@ public class BluetoothService extends Service {
 		Log.w(TAG, "onCreate BTService");
 		
 		bluetoothDevices = new HashSet<BluetoothDevice>();
-		bluetoothDevicesName = new LinkedHashSet<String>();
+		bluetoothDevicesInfoList = new LinkedHashSet<BluetoothInfo>();
+		BluetoothInfo bluetoothInfo = new BluetoothInfo();
+        bluetoothInfo.setDeviceName("Test_01");
+        bluetoothInfo.setDeviceMac("00:00:00:00:00:01");
+        bluetoothDevicesInfoList.add(bluetoothInfo);
+        bluetoothInfo = new BluetoothInfo();
+        bluetoothInfo.setDeviceName("Test_02");
+        bluetoothInfo.setDeviceMac("00:00:00:00:00:02");
+        bluetoothDevicesInfoList.add(bluetoothInfo);
 		
 		// Register the BroadcastReceiver
 		IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
@@ -124,7 +132,7 @@ public class BluetoothService extends Service {
 			}
 			*/
 			if (null != bluetoothInterface) {
-				bluetoothInterface.bluetoothDevicesUpdate(bluetoothDevicesName);
+				bluetoothInterface.bluetoothDevicesUpdate(bluetoothDevicesInfoList);
 			}
 			
 			//扫描新的设备
@@ -157,7 +165,7 @@ public class BluetoothService extends Service {
     public synchronized void connect(int position) {
     	
     	Object[] deviceses = bluetoothDevices.toArray();
-		BluetoothDevice mBluetoothDevice = (BluetoothDevice) deviceses[position];
+		BluetoothDevice mBluetoothDevice = (BluetoothDevice) deviceses[position - 2];
 
         // Cancel any thread attempting to make a connection
         if (mState == STATE_CONNECTING) {
@@ -246,12 +254,15 @@ public class BluetoothService extends Service {
 	            BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
 	            // Add the name and address to an array
 	            
-	            bluetoothDevicesName.add(device.getName() + "\n" + device.getAddress());
+	            BluetoothInfo bluetoothInfo = new BluetoothInfo();
+	            bluetoothInfo.setDeviceName(device.getName());
+	            bluetoothInfo.setDeviceMac(device.getAddress());
+	            bluetoothDevicesInfoList.add(bluetoothInfo);
 	            bluetoothDevices.add(device);
 	            
 	            if (null != bluetoothInterface) {
-	            	Log.v(TAG,""+bluetoothDevicesName.size());
-					bluetoothInterface.bluetoothDevicesUpdate(bluetoothDevicesName);
+	            	Log.v(TAG,""+bluetoothDevicesInfoList.size());
+					bluetoothInterface.bluetoothDevicesUpdate(bluetoothDevicesInfoList);
 				}
 	            
 	            Log.v(TAG, device.getName() + "\n" + device.getAddress());

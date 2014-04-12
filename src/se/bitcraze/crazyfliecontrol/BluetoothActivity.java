@@ -3,6 +3,7 @@ package se.bitcraze.crazyfliecontrol;
 
 import java.util.LinkedHashSet;
 
+import se.bitcraze.communication.BluetoothInfo;
 import se.bitcraze.communication.BluetoothInterface;
 import se.bitcraze.communication.BluetoothService;
 import se.bitcraze.communication.BluetoothService.BlueoothBinder;
@@ -31,7 +32,7 @@ public class BluetoothActivity extends Activity {
 	BluetoothService mService;
     boolean mBound = false;
 	
-	private LinkedHashSet<String> bluetoothDevicesName;
+	private LinkedHashSet<BluetoothInfo> bluetoothDevicesName;
 	private ListView mBluetoothList;
 
 	@Override
@@ -121,6 +122,9 @@ public class BluetoothActivity extends Activity {
 	OnItemClickListener listListener = new OnItemClickListener() {
 		@Override
 		public void onItemClick(AdapterView<?> arg0, View arg1, int position, long id) {
+			if(position < 2){
+				return;
+			}
 			mService.connect(position);
 		}
 	};
@@ -141,7 +145,7 @@ public class BluetoothActivity extends Activity {
             mService.setBluetoothInterface(new BluetoothInterface() {  
                   
                 @Override  
-                public void bluetoothDevicesUpdate(LinkedHashSet<String> bluetoothDevices) {  
+                public void bluetoothDevicesUpdate(LinkedHashSet<BluetoothInfo> bluetoothDevices) {  
                 	bluetoothDevicesName = bluetoothDevices;
                 	updateBluetoothList();
                 }
