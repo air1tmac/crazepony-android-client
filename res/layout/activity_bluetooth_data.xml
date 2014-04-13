@@ -43,12 +43,19 @@
                 android1:layout_height="wrap_content"
                 android1:text="Transmit"
                 android1:textAppearance="?android:attr/textAppearanceLarge" />
-
-            <ToggleButton
-                android1:id="@+id/bluetoothButton"
-                android1:layout_width="wrap_content"
-                android1:layout_height="wrap_content"
-                android1:text="ToggleButton" />
+			
+			<EditText
+			    android:id="@+id/send_data"
+			    android:layout_width="fill_parent"
+			    android:layout_height="wrap_content"
+			    android:hint="@string/cancel"
+			    android:inputType="textEmailAddress" />
+			
+			<Button
+			    android:id="@+id/send_button"
+			    android:layout_width="wrap_content"
+			    android:layout_height="wrap_content"
+			    android:text="@string/send"/>
 
         </LinearLayout>
     </LinearLayout>

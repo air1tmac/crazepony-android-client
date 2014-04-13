@@ -9,6 +9,8 @@
     <string name="bluetooth_scan_title">Bluetooth Scan</string>
     <string name="bluetooth_scan">Scaning the bluetooth device</string>
     
+    <string name="send">Send</string>
+    
     <string name="action_bluetooth">Bluetooth</string>
     <string name="menu_bluetooth">Bluetooth</string>
     <string name="menu_connect">Connect</string>
