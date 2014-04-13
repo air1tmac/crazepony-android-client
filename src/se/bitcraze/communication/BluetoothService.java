@@ -17,7 +17,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Binder;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.Message;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -42,6 +44,9 @@ public class BluetoothService extends Service {
 	
 	private Intent intent = new Intent("com.crazepony.communication.RECEIVER");  
 	
+	// Message types sent from the BluetoothService Handler
+    public static final int MESSAGE_STATE_CHANGE = 1;
+    
     // Constants that indicate the current connection state
 	public int mState = STATE_NONE;
     public static final int STATE_NONE = 0;       // we're doing nothing
@@ -107,56 +112,51 @@ public class BluetoothService extends Service {
 		return Service.START_STICKY;
 	}
 	
-
 	
+    private final Handler mHandler = new Handler() {
+        @Override
+        public void handleMessage(Message msg) {
+            switch (msg.what) {
+            case MESSAGE_STATE_CHANGE:
+            	if (null != bluetoothInterface) {
+                	bluetoothInterface.bluetoothDevicesUpdate(bluetoothDevicesInfoList);
+        			bluetoothInterface.stateUpdate(mState);
+        		}
+                break;
+            }
+        }
+    };
+
 	
 	public void  setBluetoothInterface(BluetoothInterface bluetoothInter) {
 		this.bluetoothInterface = bluetoothInter;
+		
+		if (null != bluetoothInterface) {
+			bluetoothInterface.bluetoothDevicesUpdate(bluetoothDevicesInfoList);
+		}
 	}
 	
 	
 	public void startBluetoothDiscovery() {
 		if(checkBluetooth()){
-			//获取已经配对的设备
-			/*
-			Set<BluetoothDevice> pairedDevices = mBluetoothAdapter.getBondedDevices();
-			if (pairedDevices.size() > 0) {
-			    // Loop through paired devices
-			    for (BluetoothDevice device : pairedDevices) {
-			    	bluetoothDevicesName.add(device.getName() + "\n" + device.getAddress());
-		            bluetoothDevices.add(device);
-		            
-		            if (null != bluetoothInterface) {
-						bluetoothInterface.bluetoothDevicesUpdate(bluetoothDevicesName);
-					}
-			    }
-			}
-			*/
-			if (null != bluetoothInterface) {
-				bluetoothInterface.bluetoothDevicesUpdate(bluetoothDevicesInfoList);
-			}
-			
 			//扫描新的设备
-			setState(STATE_SCANNING);
+			mState = STATE_SCANNING;
 			mBluetoothAdapter.startDiscovery();
 		}
 	}
 	
 	public void cancelBluetoothDiscovery() {
 		mBluetoothAdapter.cancelDiscovery();
+		
+		//由扫描状态恢复到NONE状态，或者有连接状态
+		for (BluetoothInfo bluetoothInfo : bluetoothDevicesInfoList) {
+            if(true == bluetoothInfo.getConnectState()){
+            	mState = STATE_CONNECTED;
+            	return;
+            }
+        }
+		mState = STATE_NONE;
 	}
-	
-	
-    /**
-     * Set the current state of the chat connection
-     * @param state  An integer defining the current connection state
-     */
-    private synchronized void setState(int state) {
-        mState = state;
-        if (null != bluetoothInterface) {
-			bluetoothInterface.stateUpdate(state);
-		}
-    }
 	
     /**
      * Start the ConnectThread to initiate a connection to a remote device.
@@ -179,7 +179,7 @@ public class BluetoothService extends Service {
         // Start the thread to connect with the given device
         mConnectThread = new ConnectThread(mBluetoothDevice);
         mConnectThread.start();
-        setState(STATE_CONNECTING);
+        mState = STATE_CONNECTING;
     }
 	
 	
@@ -208,10 +208,11 @@ public class BluetoothService extends Service {
                 	bluetoothInfo.setConnectState(true);
                 }
             }
-			bluetoothInterface.bluetoothDevicesUpdate(bluetoothDevicesInfoList);
 		}
-
-        setState(STATE_CONNECTED);
+        
+        Message msg = mHandler.obtainMessage(BluetoothService.MESSAGE_STATE_CHANGE);
+        mHandler.sendMessage(msg);
+        mState = STATE_CONNECTED;
     }
     
     
@@ -220,7 +221,7 @@ public class BluetoothService extends Service {
      */
     private void connectionLost() {
         // Send a failure message back to the Activity
-    	setState(STATE_NONE);
+    	mState = STATE_NONE;
 
         // Cancel the thread that completed the connection
         if (mConnectThread != null) {mConnectThread.cancel(); mConnectThread = null;}
@@ -266,12 +267,9 @@ public class BluetoothService extends Service {
 	            bluetoothInfo.setConnectState(false);
 	            bluetoothDevicesInfoList.add(bluetoothInfo);
 	            bluetoothDevices.add(device);
-	            device.getBondState();
 	            
-	            if (null != bluetoothInterface) {
-	            	Log.v(TAG,""+bluetoothDevicesInfoList.size());
-					bluetoothInterface.bluetoothDevicesUpdate(bluetoothDevicesInfoList);
-				}
+	            Message msg = mHandler.obtainMessage(BluetoothService.MESSAGE_STATE_CHANGE);
+	            mHandler.sendMessage(msg);
 	            
 	            Log.v(TAG, device.getName() + "\n" + device.getAddress());
 	        }
