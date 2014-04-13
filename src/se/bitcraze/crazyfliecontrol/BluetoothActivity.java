@@ -110,14 +110,10 @@ public class BluetoothActivity extends Activity {
 	}
     
     
-    private void toBluetoothDataActiviy() {
+    private void startBluetoothDataActiviy() {
     	Intent intent = new Intent(this, BlueToothDataActivity.class);
 		startActivity(intent);
 	}
-	
-    
-
-
 	
 	OnItemClickListener listListener = new OnItemClickListener() {
 		@Override
@@ -125,7 +121,16 @@ public class BluetoothActivity extends Activity {
 			if(position < 2){
 				return;
 			}
-			mService.connect(position);
+			
+			Object[] deviceses = bluetoothDevicesName.toArray();
+			BluetoothInfo mBluetoothInfo = (BluetoothInfo) deviceses[position];
+			if(true == mBluetoothInfo.getConnectState()){
+				//启动到bt data页面
+				startBluetoothDataActiviy();
+			}else{
+				//连接bt外设
+				mService.connect(position);
+			}
 		}
 	};
 	
