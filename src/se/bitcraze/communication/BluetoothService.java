@@ -38,7 +38,6 @@ public class BluetoothService extends Service {
 	
 	private BluetoothInterface bluetoothInterface;
 	private Set<BluetoothDevice> bluetoothDevices;
-	private BluetoothSocket mBluetoothSocket = null;
 	private final UUID SPP_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
 	
 	private Intent intent = new Intent("com.crazepony.communication.RECEIVER");  
@@ -72,10 +71,12 @@ public class BluetoothService extends Service {
 		BluetoothInfo bluetoothInfo = new BluetoothInfo();
         bluetoothInfo.setDeviceName("Test_01");
         bluetoothInfo.setDeviceMac("00:00:00:00:00:01");
+        bluetoothInfo.setConnectState(false);
         bluetoothDevicesInfoList.add(bluetoothInfo);
         bluetoothInfo = new BluetoothInfo();
         bluetoothInfo.setDeviceName("Test_02");
         bluetoothInfo.setDeviceMac("00:00:00:00:00:02");
+        bluetoothInfo.setConnectState(false);
         bluetoothDevicesInfoList.add(bluetoothInfo);
 		
 		// Register the BroadcastReceiver
@@ -202,7 +203,12 @@ public class BluetoothService extends Service {
 
         // Send the name of the connected device back to the UI Activity
         if (null != bluetoothInterface) {
-			bluetoothInterface.hasConnected(device.getName());
+        	for (BluetoothInfo bluetoothInfo : bluetoothDevicesInfoList) {
+                if(bluetoothInfo.getDeviceMac().equals(device.getAddress())){
+                	bluetoothInfo.setConnectState(true);
+                }
+            }
+			bluetoothInterface.bluetoothDevicesUpdate(bluetoothDevicesInfoList);
 		}
 
         setState(STATE_CONNECTED);
@@ -257,8 +263,10 @@ public class BluetoothService extends Service {
 	            BluetoothInfo bluetoothInfo = new BluetoothInfo();
 	            bluetoothInfo.setDeviceName(device.getName());
 	            bluetoothInfo.setDeviceMac(device.getAddress());
+	            bluetoothInfo.setConnectState(false);
 	            bluetoothDevicesInfoList.add(bluetoothInfo);
 	            bluetoothDevices.add(device);
+	            device.getBondState();
 	            
 	            if (null != bluetoothInterface) {
 	            	Log.v(TAG,""+bluetoothDevicesInfoList.size());

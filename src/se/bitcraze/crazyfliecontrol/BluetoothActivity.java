@@ -151,20 +151,11 @@ public class BluetoothActivity extends Activity {
                 }
 
 				@Override
-				public void hasConnected(String bluetoothDevices) {
-					//切换到bt数据页面
-					toBluetoothDataActiviy();
-				}
-
-				@Override
 				public void stateUpdate(int state) {
 					
 				}
   
             }); 
-            
-            //开启第一次蓝牙扫描
-            mService.startBluetoothDiscovery();
         }
 
         @Override

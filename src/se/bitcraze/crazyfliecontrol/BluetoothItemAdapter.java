@@ -10,6 +10,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 public class BluetoothItemAdapter extends BaseAdapter {
@@ -45,10 +46,16 @@ public class BluetoothItemAdapter extends BaseAdapter {
 			
 			holder.txtDeviceName = (TextView) mInflater.findViewById(R.id.device_name);
 			holder.txtDeviceMac = (TextView) mInflater.findViewById(R.id.device_mac);
+			holder.imgConnectState = (ImageView) mInflater.findViewById(R.id.connect_state);
 			mInflater.setTag(holder);
 			
 			holder.txtDeviceName.setText(mData.get(position).getDeviceName());
 			holder.txtDeviceMac.setText(mData.get(position).getDeviceMac());
+			if(false == mData.get(position).getConnectState()){
+				holder.imgConnectState.setVisibility(View.INVISIBLE);
+			}else{
+				holder.imgConnectState.setVisibility(View.VISIBLE);
+			}
 		}
 		return mInflater;
 	}
@@ -57,6 +64,8 @@ public class BluetoothItemAdapter extends BaseAdapter {
     static class ViewHolder {
         TextView txtDeviceName;
         TextView txtDeviceMac;
+        ImageView imgConnectState;
+        
     }
 
 }

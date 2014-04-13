@@ -9,7 +9,7 @@
     
         <!-- icon -->
      <ImageView
-         android:id="@+id/item_icon"
+         android:id="@+id/connect_state"
          android:layout_width="32dp"
          android:layout_height="32dp"
          android:layout_alignParentRight="true"

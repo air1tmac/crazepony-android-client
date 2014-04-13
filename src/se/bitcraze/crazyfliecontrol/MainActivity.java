@@ -763,12 +763,7 @@ public class MainActivity extends Activity {
                 @Override  
                 public void bluetoothDevicesUpdate(LinkedHashSet<BluetoothInfo> bluetoothDevices) {  
                 }
-
-				@Override
-				public void hasConnected(String bluetoothDevices) {
-					//切换到bt数据页面
-				}
-
+                
 				@Override
 				public void stateUpdate(int state) {
 					updateBluetoothItem(state);					
