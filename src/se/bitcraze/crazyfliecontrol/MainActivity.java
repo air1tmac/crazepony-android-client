@@ -761,14 +761,9 @@ public class MainActivity extends Activity {
             mService.setBluetoothInterface(new BluetoothInterface() {  
                   
                 @Override  
-                public void bluetoothDevicesUpdate(LinkedHashSet<BluetoothInfo> bluetoothDevices) {  
+                public void bluetoothDevicesUpdate(LinkedHashSet<BluetoothInfo> bluetoothDevices) {
+                	updateBluetoothItem(mService.mState);
                 }
-                
-				@Override
-				public void stateUpdate(int state) {
-					updateBluetoothItem(state);					
-				}
-
             }); 
         }
         

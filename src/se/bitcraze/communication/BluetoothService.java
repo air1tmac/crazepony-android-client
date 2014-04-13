@@ -120,7 +120,6 @@ public class BluetoothService extends Service {
             case MESSAGE_STATE_CHANGE:
             	if (null != bluetoothInterface) {
                 	bluetoothInterface.bluetoothDevicesUpdate(bluetoothDevicesInfoList);
-        			bluetoothInterface.stateUpdate(mState);
         		}
                 break;
             }

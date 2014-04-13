@@ -149,12 +149,6 @@ public class BluetoothActivity extends Activity {
                 	bluetoothDevicesName = bluetoothDevices;
                 	updateBluetoothList();
                 }
-
-				@Override
-				public void stateUpdate(int state) {
-					
-				}
-  
             }); 
         }
 
