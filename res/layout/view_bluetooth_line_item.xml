@@ -1,11 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     android:orientation="vertical"
     android:paddingBottom="10dip"
     android:paddingLeft="10dip"
     android:paddingTop="10dip" >
+    
+        <!-- icon -->
+     <ImageView
+         android:id="@+id/item_icon"
+         android:layout_width="32dp"
+         android:layout_height="32dp"
+         android:layout_alignParentRight="true"
+         android:layout_marginLeft="8dp"
+         android:layout_marginRight="8dp"
+         android:layout_marginTop="8dp"
+         android:src="@drawable/ic_next_item"/>
  
     <TextView
         android:id="@+id/device_name"
@@ -17,7 +28,10 @@
     <TextView
         android:id="@+id/device_mac"
         android:layout_width="wrap_content"
+        android:paddingTop="20dip"
         android:textColor="#B0B3A3"
         android:layout_height="wrap_content" />
+    
+
  
-</LinearLayout>
+</RelativeLayout>
