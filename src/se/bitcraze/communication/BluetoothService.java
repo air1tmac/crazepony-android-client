@@ -201,13 +201,11 @@ public class BluetoothService extends Service {
         mConnectedThread.start();
 
         // Send the name of the connected device back to the UI Activity
-        if (null != bluetoothInterface) {
-        	for (BluetoothInfo bluetoothInfo : bluetoothDevicesInfoList) {
-                if(bluetoothInfo.getDeviceMac().equals(device.getAddress())){
-                	bluetoothInfo.setConnectState(true);
-                }
+    	for (BluetoothInfo bluetoothInfo : bluetoothDevicesInfoList) {
+            if(bluetoothInfo.getDeviceMac().equals(device.getAddress())){
+            	bluetoothInfo.setConnectState(true);
             }
-		}
+        }
         
         Message msg = mHandler.obtainMessage(BluetoothService.MESSAGE_STATE_CHANGE);
         mHandler.sendMessage(msg);
@@ -275,8 +273,17 @@ public class BluetoothService extends Service {
 	        if (BluetoothDevice.ACTION_FOUND.equals(action)) {
 	            // Get the BluetoothDevice object from the Intent
 	            BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-	            // Add the name and address to an array
 	            
+	            // 以mac地址作为唯一判断标准，防止重复添加
+	            if (null != bluetoothInterface) {
+	            	for (BluetoothInfo bluetoothInfo : bluetoothDevicesInfoList) {
+	                    if(bluetoothInfo.getDeviceMac().equals(device.getAddress())){
+	                    	return;
+	                    }
+	                }
+	    		}
+	            
+	            // Add the name and address to an array
 	            BluetoothInfo bluetoothInfo = new BluetoothInfo();
 	            bluetoothInfo.setDeviceName(device.getName());
 	            bluetoothInfo.setDeviceMac(device.getAddress());
@@ -427,6 +434,15 @@ public class BluetoothService extends Service {
         public void cancel() {
             try {
                 mmSocket.close();
+                
+                //断开连接，发送消息给ui
+            	for (BluetoothInfo bluetoothInfo : bluetoothDevicesInfoList) {
+                	bluetoothInfo.setConnectState(false);
+                }
+                
+                Message msg = mHandler.obtainMessage(BluetoothService.MESSAGE_STATE_CHANGE);
+                mHandler.sendMessage(msg);
+                mState = STATE_CONNECTED;
             } catch (IOException e) {
                 Log.e(TAG, "close() of connect socket failed", e);
             }
