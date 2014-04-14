@@ -207,21 +207,6 @@ public class MainActivity extends Activity {
         	case R.id.action_bluetooth:
 	        	beginConnectBluetooth();
 	    		break;
-        	case R.id.menu_bluetooth:
-        		break;
-            case R.id.menu_connect:
-                try {
-                    linkConnect();
-                } catch (IllegalStateException e) {
-                    Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
-                }
-                break;
-            case R.id.menu_disconnect:
-                linkDisconnect();
-                break;
-            case R.id.menu_radio_scan:
-                radioScan();
-                break;
             case R.id.preferences:
                 Intent intent2 = new Intent(this, PreferencesActivity.class);
                 startActivity(intent2);

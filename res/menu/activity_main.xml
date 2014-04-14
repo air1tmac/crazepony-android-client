@@ -4,24 +4,6 @@
 		  android:icon="@drawable/ic_bluetooth"
           android:showAsAction="ifRoom" />
     <!-- Settings, should always be in the overflow -->
-	<item
-        android:id="@+id/menu_bluetooth"
-        android:showAsAction="never"
-        android:title="@string/menu_bluetooth"/>
-    <item
-        android:id="@+id/menu_connect"
-        android:showAsAction="never"
-        android:title="@string/menu_connect"/>
-    <item
-        android:id="@+id/menu_disconnect"
-        android:orderInCategory="50"
-        android:showAsAction="never"
-        android:title="@string/menu_disconnect"/>
-    <item
-        android:id="@+id/menu_radio_scan"
-        android:title="@string/menu_radio_scan"
-        android:orderInCategory="80"
-        android:showAsAction="never"/>
     <item
         android:id="@+id/preferences"
         android:orderInCategory="100"
