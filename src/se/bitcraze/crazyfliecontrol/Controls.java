@@ -102,9 +102,6 @@ public class Controls {
             if(event.getKeyCode() == mEmergencyBtn){
                 //quick solution
                 resetAxisValues();
-                if (mActivity.getCrazyflieLink() != null) {
-                    mActivity.linkDisconnect();
-                }
                 Toast.makeText(mActivity, "Emergency Stop", Toast.LENGTH_SHORT).show();
             }else if (event.getKeyCode() == mRollTrimPlusBtn) {
                 increaseTrim(PreferencesActivity.KEY_PREF_ROLLTRIM);
