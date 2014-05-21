@@ -4,6 +4,8 @@ package se.bitcraze.crazyflielib.crtp;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
+import android.util.Log;
+
 /**
  * Packet of data which can be sent/received from/to the Crazyflie. All packet
  * implementations must be immutable to avoid issues with modifying packets via
@@ -15,6 +17,7 @@ public abstract class CrtpPacket {
      * Byte order used when serializing/deserializing packets.
      */
     public static final ByteOrder BYTE_ORDER = ByteOrder.LITTLE_ENDIAN;
+    private static final String TAG = "CrtpPacket";
 
     /**
      * NULL packet. Header is 0xFF without any data.
@@ -89,6 +92,13 @@ public abstract class CrtpPacket {
             serializeData(buffer);
             mSerializedPacket = buffer.array();
         }
+        
+        StringBuilder sb = new StringBuilder();
+        for (byte b : mSerializedPacket) {
+            sb.append(String.format("%02X ", b));
+        }
+        
+        Log.v(TAG, sb.toString());
 
         return mSerializedPacket;
     }

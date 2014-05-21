@@ -369,8 +369,6 @@ public class MainActivity extends Activity {
             public void run() {
                 while (true) {
                 	
-//                	mService.write();
-//                	mCrazyradioLink.send(new CommanderPacket(getRoll(), getPitch(), getYaw(), (char) (getThrust()/100 * MAX_THRUST), isXmode()));
                 	CommanderPacket commanderPacket = new CommanderPacket(getRoll(), getPitch(), getYaw(), (char) (getThrust()/100 * MAX_THRUST), isXmode());
                 	mService.write(commanderPacket.toByteArray());
                 	
