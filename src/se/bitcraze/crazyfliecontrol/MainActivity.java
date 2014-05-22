@@ -373,7 +373,7 @@ public class MainActivity extends Activity {
                 	mService.write(commanderPacket.toByteArray());
                 	
                     try {
-                    	Thread.sleep(20, 0);
+                    	Thread.sleep(50, 0);
                     } catch (InterruptedException e) {
                         break;
                     }

@@ -33,6 +33,8 @@ public abstract class CrtpPacket {
         }
     };
 
+    private final byte[] mPacketStart = new byte[2];
+    
     private final byte mPacketHeader;
     private byte[] mSerializedPacket;
 
@@ -52,6 +54,9 @@ public abstract class CrtpPacket {
      * @param packetHeader header of the packet.
      */
     public CrtpPacket(byte packetHeader) {
+    	mPacketStart[0] = (byte)0xaa;
+    	mPacketStart[1] = (byte)0xaa;
+    	
         this.mPacketHeader = packetHeader;
         this.mSerializedPacket = null;
     }
@@ -87,7 +92,8 @@ public abstract class CrtpPacket {
     public byte[] toByteArray() {
         // if it's the first call, serialize the packet and cache it
         if (mSerializedPacket == null) {
-            ByteBuffer buffer = ByteBuffer.allocate(getDataByteCount() + 1).order(BYTE_ORDER);
+            ByteBuffer buffer = ByteBuffer.allocate(getDataByteCount() + 3).order(BYTE_ORDER);
+            buffer.put(mPacketStart);
             buffer.put(mPacketHeader);
             serializeData(buffer);
             mSerializedPacket = buffer.array();
